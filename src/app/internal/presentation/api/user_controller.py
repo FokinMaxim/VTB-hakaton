@@ -1,12 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from uuid import UUID
+from uuid import UUID, uuid4
 from typing import List
-
 from src.config.database import get_db
 from src.app.internal.data.repositories.user_repository import UserRepository
 from src.app.internal.domain.entities.user_entity import UserEntity
-from src.app.internal.presentation.api.user_schema import UserCreate, UserUpdate, UserResponse
+from src.app.internal.presentation.scheme.user_schema import UserCreate, UserUpdate, UserResponse
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -20,7 +19,9 @@ async def create_user(
         user: UserCreate,
         user_repo: UserRepository = Depends(get_user_repository)
 ):
-    user_entity = UserEntity(**user.dict())
+    user_data = user.dict()
+    user_data['uuid'] = str(uuid4())
+    user_entity = UserEntity(**user_data)
     created_user = await user_repo.create_user(user_entity)
     return created_user
 
